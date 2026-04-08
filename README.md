@@ -1,62 +1,87 @@
-# BTCPay Server Installer
+# BTCPay Server Installer — AI Agent Skill
 
-Deploy BTCPay Server on your own Linux server — no technical knowledge needed.
-
-One command. Everything configured. Up and running in ~10 minutes.
+An AI agent skill for deploying BTCPay Server via Docker. Designed for non-technical users — the agent handles everything, the user just answers questions.
 
 ---
 
-## Quick Start
+## For AI Agent Users
 
-SSH into your server and run:
+### Hermes Agent
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/welliv/btcpay-server-install/main/scripts/deploy.sh | bash
+# Install the skill
+curl -sSL https://raw.githubusercontent.com/welliv/btcpay-server-install/main/install-hermes.sh | bash
+
+# Then say to Hermes:
+# "Install BTCPay Server"
 ```
 
-Answer the questions. Let it run. Your server is ready in ~10 minutes.
+### Claude Code / Claude Desktop
 
-That's it.
+Add to your `~/.claude/projects/*/instructions` or global settings:
+
+```
+You have access to the btcpay-server-install skill. When the user says to install BTCPay Server, read the skill from ~/.hermes/skills/btcpay-server-install/SKILL.md and follow the guided setup.
+```
+
+Or via the skill manager:
+```bash
+skill install https://github.com/welliv/btcpay-server-install
+```
+
+### Other AI Agents
+
+Clone the repo and adapt the `SKILL.md` to your agent's skill format:
+
+```bash
+git clone https://github.com/welliv/btcpay-server-install
+```
+
+---
+
+## What the Skill Does
+
+The agent walks the user through 5 simple questions:
+
+1. **Domain** — Do you have one? (TOR works without DNS)
+2. **Network** — Mainnet or Testnet?
+3. **Storage** — How much disk for Bitcoin? (100GB, 50GB, 25GB, 5GB)
+4. **Lightning** — Yes or no?
+5. **Ready** — Confirm and deploy
+
+The agent then runs `deploy.sh` on the user's server and verifies everything is working.
 
 ---
 
 ## What Gets Installed
 
-| Component | What it is |
+| Component | Description |
 |---|---|
-| **BTCPay Server** | Your payment processor |
+| **BTCPay Server** | Payment processor |
 | **Bitcoin Node** | Validates transactions independently |
 | **TOR** | Private access link — works immediately |
 | **Let's Encrypt** | Auto-configured HTTPS |
 | **PostgreSQL** | Database |
 | **Nginx** | Web server |
 
-**Bitcoin sync runs in background** — takes 1–3 days. Your server is ready to use right away.
+Bitcoin sync runs in background — takes 1–3 days. Server is ready to use right away.
 
 ---
 
-## What You Need
+## Requirements
 
 | Requirement | Details |
 |---|---|
 | **OS** | Ubuntu 20.04+ or Debian 11+ |
 | **Disk** | At least 100GB free |
 | **Ports** | 80 and 443 open |
-| **Domain** | Optional — TOR works without it |
+| **Access** | SSH to the server |
 
 ---
 
-## Configuration Options
+## Configuration
 
-Override defaults with environment variables:
-
-```bash
-# Example: domain + Lightning + 100GB prune
-BTCPAY_HOST="btcpay.mysite.com" \
-LIGHTNING="lnd" \
-PRUNE="100" \
-curl -sSL https://raw.githubusercontent.com/welliv/btcpay-server-install/main/scripts/deploy.sh | bash
-```
+Default values can be overridden:
 
 | Variable | Default | Options |
 |---|---|---|
@@ -67,112 +92,61 @@ curl -sSL https://raw.githubusercontent.com/welliv/btcpay-server-install/main/sc
 
 **Pruning reference:**
 
-| Size | History | Notes |
-|---|---|---|
-| 100GB | ~1 year | Recommended for most users |
-| 50GB | ~6 months | |
-| 25GB | ~3 months | Minimum for Lightning Network |
-| 5GB | ~2 weeks | Testing only |
+| Size | History |
+|---|---|
+| 100GB | ~1 year |
+| 50GB | ~6 months |
+| 25GB | ~3 months (minimum for Lightning) |
+| 5GB | ~2 weeks (testing only) |
 
 ---
 
 ## After Deployment
 
-The script shows you two access links:
+The skill shows the user two access links:
 
-**🧅 TOR** *(works immediately)*
-```
-http://your-tor-address.onion
-```
+- **🧅 TOR** — works immediately
+- **🌐 Domain** — works once DNS propagates
 
-**🌐 Your domain** *(works once DNS propagates)*
-```
-https://btcpay.yoursite.com
-```
-
-Visit the TOR link and register your account.
-
----
-
-## Management Commands
-
-On your server, these are available:
-
+Post-deploy management via `btcpay-helpers.sh`:
 ```bash
 btcpay-helpers.sh status    # Check if everything is running
-btcpay-helpers.sh tor        # Get your TOR link
+btcpay-helpers.sh tor        # Get TOR link
 btcpay-helpers.sh btc       # Bitcoin sync status
 btcpay-helpers.sh logs      # View BTCPay logs
 btcpay-helpers.sh restart   # Restart everything
-btcpay-helpers.sh stop      # Stop BTCPay
-btcpay-helpers.sh start     # Start BTCPay
-```
-
-To copy helpers to your path:
-```bash
-sudo cp /root/btcpay-helpers.sh /usr/local/bin/
 ```
 
 ---
 
-## Changing Settings Later
+## Repo Structure
 
-```bash
-cd /root/btcpayserver-docker && . btcpay-down.sh
-nano /root/.env    # edit your settings
-cd /root/btcpayserver-docker && . btcpay-setup.sh -i
 ```
-
-Blockchain data survives restarts. Rarely need a full re-install.
-
----
-
-## Uninstalling
-
-```bash
-cd /root/btcpayserver-docker && . btcpay-down.sh
-rm -rf /root/btcpayserver-docker
-rm -f /root/.env /etc/profile.d/btcpay-env.sh
-docker volume ls | grep generated | awk '{print $2}' | xargs -r docker volume rm
+btcpay-server-install/
+├── SKILL.md               — AI agent skill (primary)
+├── README.md              — This file
+├── LICENSE               — MIT
+├── CHANGELOG.md          — version history
+├── CONTRIBUTING.md       — how to contribute
+├── SECURITY.md           — vulnerability disclosure
+├── .github/
+│   ├── workflows/ci.yml   — shellcheck + markdown lint
+│   ├── ISSUE_TEMPLATE/    — bug + feature templates
+│   └── pull_request_template.md
+├── scripts/
+│   ├── deploy.sh          — deployment script (called by skill)
+│   └── btcpay-helpers.sh  — post-deploy management
+└── install-hermes.sh      — Hermes skill installer
 ```
-
----
-
-## Common Issues
-
-**"Domain shows 503 error"**
-DNS hasn't propagated. Use the TOR link — it works immediately.
-
-**"Bitcoin RPC not responding"**
-Normal right after deployment. RPC comes online after blockheaders finish downloading. Wait 5-10 minutes.
-
-**"Port 80/443 already in use"**
-Stop the existing service first: `systemctl stop nginx` or `systemctl stop apache2`
-
----
-
-## For Hermes Agent Users
-
-If you use [Hermes Agent](https://github.com/NousResearch/hermes-agent), this comes as a skill:
-
-```bash
-# Install the skill
-curl -sSL https://raw.githubusercontent.com/welliv/btcpay-server-install/main/install-hermes.sh | bash
-
-# Then in Hermes, say:
-# "Install BTCPay Server"
-```
-
-The skill guides you through the same setup — one question at a time, conversational.
 
 ---
 
 ## Contributing
 
-Issues and PRs welcome. This is a community tool — if something was confusing or broke, open an issue.
+Found an issue? Open a bug report or feature request. PRs welcome — see `CONTRIBUTING.md`.
 
 ---
 
 ## License
 
-MIT — do whatever you want with it.
+MIT

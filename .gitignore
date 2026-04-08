@@ -1,0 +1,23 @@
+# Environment files — contain secrets
+.env
+.env.local
+
+# Docker volumes — large, machine-specific
+generated_*/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temp
+tmp/
+temp/

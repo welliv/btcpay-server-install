@@ -68,8 +68,10 @@ tor() {
 restart() {
   echo ""
   echo "Restarting BTCPay..."
+  # shellcheck source=/dev/null
   cd "$BTCPAY_DIR" && . ./btcpay-down.sh 2>/dev/null
   sleep 2
+  # shellcheck source=/dev/null
   cd "$BTCPAY_DIR" && . ./btcpay-setup.sh -i 2>/dev/null
   echo -e "${GREEN}Done.${NC}"
   sleep 3
@@ -79,6 +81,7 @@ restart() {
 stop() {
   echo ""
   echo "Stopping BTCPay..."
+  # shellcheck source=/dev/null
   cd "$BTCPAY_DIR" && . ./btcpay-down.sh 2>/dev/null
   echo -e "${GREEN}Stopped.${NC}"
 }
@@ -86,6 +89,7 @@ stop() {
 start() {
   echo ""
   echo "Starting BTCPay..."
+  # shellcheck source=/dev/null
   cd "$BTCPAY_DIR" && . ./btcpay-setup.sh -i 2>/dev/null
   echo -e "${GREEN}Done.${NC}"
   sleep 3
@@ -103,13 +107,12 @@ btc() {
   fi
 
   # Get blockchain info — try with timeout
-  INFO=$(docker exec "$BTC_CONTAINER" bitcoin-cli getblockchaininfo 2>&1)
-  if [ $? -ne 0 ]; then
+  INFO=$(docker exec "$BTC_CONTAINER" bitcoin-cli getblockchaininfo 2>&1) || {
     echo -e "${YELLOW}Bitcoin is still starting up...${NC}"
     echo "RPC will be available in a few minutes."
     echo ""
     return
-  fi
+  }
 
   HEIGHT=$(echo "$INFO" | grep -E '"blocks"' | awk '{print $2}' | tr -d ',')
   PROGRESS=$(echo "$INFO" | grep -E '"verificationprogress"' | awk '{print $2}' | tr -d ',' | cut -c1-6)

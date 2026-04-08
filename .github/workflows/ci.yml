@@ -19,7 +19,7 @@ jobs:
           files: |
             scripts/*.sh
             install-hermes.sh
-          ignore: SC1091  # not following sourced files
+          ignore: SC1091  # /etc/os-release sourced conditionally
 
   validate-readme:
     name: Validate README Links

@@ -45,6 +45,7 @@ echo ""
 if [ ! -f /etc/os-release ]; then
   err "Cannot detect OS. This script requires Ubuntu or Debian."
 fi
+# shellcheck source=/etc/os-release disable=SC1091
 . /etc/os-release
 if [ "$ID" != "ubuntu" ] && [ "$ID" != "debian" ]; then
   warn "This script is tested on Ubuntu/Debian. Detected: $NAME"
@@ -53,11 +54,9 @@ fi
 
 # === Check if Docker is installed ===
 if command -v docker &>/dev/null && docker info &>/dev/null; then
-  log "Docker is already installed — skipping installation."
-  DOCKER_INSTALLED=false
+  log "Docker is already installed — skipping."
 else
   log "Installing Docker..."
-  DOCKER_INSTALLED=true
   curl -fsSL https://get.docker.com | sh > /dev/null 2>&1
   systemctl enable docker > /dev/null 2>&1
   systemctl start docker
@@ -128,6 +127,7 @@ echo ""
 log "Starting BTCPay Server..."
 log "This takes 5-10 minutes. Do not interrupt."
 echo ""
+# shellcheck source=/dev/null
 . ./btcpay-setup.sh -i
 echo ""
 
@@ -135,7 +135,7 @@ echo ""
 log "Verifying deployment..."
 sleep 5
 
-CONTAINERS=$(docker ps --format "{{.Names}}" 2>/dev/null | grep -E "btcpay|bitcoin|postgres|nbxplorer|nginx|tor|letsencrypt" | wc -l)
+CONTAINERS=$(docker ps --format "{{.Names}}" 2>/dev/null | grep -cE "btcpay|bitcoin|postgres|nbxplorer|nginx|tor|letsencrypt")
 if [ "$CONTAINERS" -ge 7 ]; then
   log "All containers are running. Deployment successful!"
 else

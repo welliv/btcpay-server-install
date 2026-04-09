@@ -16,7 +16,7 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
-          files: |
+          additional_files: |
             scripts/*.sh
             install-hermes.sh
           ignore: SC1091  # /etc/os-release sourced conditionally
@@ -43,10 +43,4 @@ jobs:
       - name: Run markdownlint
         uses: DavidAnson/markdownlint-cli2-action@v13
         with:
-          files: "**/*.md"
-          config: |
-            {
-              "MD013": false,
-              "MD033": false,
-              "MD041": false
-            }
+          globs: "**/*.md"

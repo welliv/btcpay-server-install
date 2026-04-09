@@ -30,7 +30,7 @@ jobs:
       - name: Check README exists and has content
         run: |
           if [ ! -s README.md ]; then exit 1; fi
-          if ! grep -q "Quick Start" README.md; then exit 1; fi
+          if ! grep -q "For AI Agent Users" README.md; then exit 1; fi
           if ! grep -q "Configuration" README.md; then exit 1; fi
           echo "README structure validated."
 
